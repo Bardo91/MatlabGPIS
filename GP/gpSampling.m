@@ -2,8 +2,8 @@
 % GP sampling
 close all; clear all; clc;
 
-l = 1;
-kernel = @(x,y) exp(-(x-y)*(x-y)'/(l*l));
+l = 3;
+kernel = @(x,y) exp(-2*sin(5*pi*(x-y))/l/l);
 
 %% Let be X the finite set of variables that we want to sample.
 X = 0:0.01:1;
@@ -26,7 +26,7 @@ colorbar;
 %% Sample gaussians
 figure(2);
 hold on;
-for i=1:20
+for i=1:5
     u = randn(n,1);
     % L  = chol(K); not very stable numerically 
     [A S D] = svd(K);

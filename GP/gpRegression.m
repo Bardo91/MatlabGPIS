@@ -57,7 +57,7 @@ plot(X, nus-sqrt(d), 'r');
 
 figure(3);
 hold on;
-for i=1:20
+for i=1:5
     u = randn(n,1);
     % L  = chol(K); not very stable numerically 
     [A S D] = svd(sig);

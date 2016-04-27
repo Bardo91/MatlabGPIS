@@ -3,16 +3,20 @@
 
 close all; clear all; clc;
 
-X = [0,0;
-     1,0;
-     1,1;
-     0,1;
-     0.5,1]';
-f =[0,0,0,0,0]';
-
+X = [-0.5,-0.5;
+     -0.5,0.5;
+     0.5,0.5;
+     0.5,-0.5]';
+%      0.5,1.3,
+%      0.5,-0.3,
+%      -0.3,0.5,
+%      1.3, 0.5]';
+ 
 m = length(X); 
 
-[Xg,Yg] = meshgrid(-2:0.1:2,-2:0.1:2);
+f = zeros(m,1);
+
+[Xg,Yg] = meshgrid(-1:0.1:1,-1:0.1:1);
 [d1,d2] = size(Xg);
 Xs = [reshape(Xg,d1*d2,1),reshape(Yg,d1*d2,1)]';
 n = length(Xs);
@@ -23,7 +27,7 @@ gamma =10;
 kernel = @(x,y)(sigma^2 * exp(-1/2 * gamma *(x - y)'*(x - y)));
 
 R = 1;
-cen = [0.5, 0.5]';
+cen = [0.0, 0.0]';
 mean = @(x) 1/2/R*((x-cen)'*(x-cen) - R*2);
 
 
@@ -96,4 +100,8 @@ plot(X(1,:), X(2,:), 'r*');
 surf(Xg,Yg,Fs);
 surf(Xg,Yg,devFsN);
 surf(Xg,Yg,devFsP);
-shading interp;
+
+figure();
+hold on;
+plot(X(1,:), X(2,:), 'r*');
+contour(Xg,Yg,Fs)

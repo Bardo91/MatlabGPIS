@@ -7,10 +7,10 @@ X = [-0.5,-0.5;
      -0.5,0.5;
      0.5,0.5;
      0.5,-0.5]';
-%      0.5,1.3,
-%      0.5,-0.3,
-%      -0.3,0.5,
-%      1.3, 0.5]';
+%      0.0,0.707,
+%      0.707,-0.0,
+%      -0.707,0.0,
+%      0.0, -0.707]';
  
 m = length(X); 
 
@@ -22,7 +22,7 @@ Xs = [reshape(Xg,d1*d2,1),reshape(Yg,d1*d2,1)]';
 n = length(Xs);
 
 sigma = 1;
-gamma =10;
+gamma = 0.1;
 
 kernel = @(x,y)(sigma^2 * exp(-1/2 * gamma *(x - y)'*(x - y)));
 
@@ -71,7 +71,7 @@ colorbar;
 for i = 1:m
     mu(i) = mean(X(:,i));
 end
-fss=[];
+
 for i = 1:n
     mus(i) = mean(Xs(:,i));
 end

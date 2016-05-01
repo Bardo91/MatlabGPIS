@@ -106,6 +106,7 @@ colorbar;
 Fs = reshape(fs,d1,d1,d1);
 figure();
 hold on;
+plot3(X(1,:), X(2,:), X(3,:), 'r.', 'MarkerSize',40);
 p = patch(isosurface(Xg, Yg, Zg, Fs, 0));
 p.FaceColor = 'green';
 p.EdgeColor = 'none';

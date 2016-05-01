@@ -6,18 +6,18 @@ close all; clear all; clc;
 X = [1,0,0;
     0,1,0;
     0,0,1;
-    -0.5774,-0.5774,-0.5774]';
- 
+%     -0.5774,-0.5774,-0.5774]';
+    -1,-1,-1]';
 m = length(X); 
 
 f = zeros(m,1);
 
-[Xg,Yg, Zg] = meshgrid(-1.5:0.25:1.5,-1.5:0.25:1.5,-1.5:0.25:1.5);
+[Xg,Yg, Zg] = meshgrid(-1.75:0.25:1.5,-1.75:0.25:1.5,-1.75:0.25:1.5);
 [d1,d2] = size(Xg);
 Xs = [reshape(Xg,d1*d2,1),reshape(Yg,d1*d2,1),reshape(Zg,d1*d2,1)]';
 n = length(Xs);
 
-sigma = 1;
+sigma = 0.75;
 gamma = 1;
 
 kernel = @(x,y)(sigma^2 * exp(-1/2 * gamma *(x - y)'*(x - y)));

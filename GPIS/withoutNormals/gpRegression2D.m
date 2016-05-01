@@ -6,13 +6,13 @@ close all; clear all; clc;
 X = [-0.5,-0.5;
      -0.5,0.5;
      0.5,0.5;
-     0.5,-0.5;
-%      0.3,1;
-%      00.5,-1]';
-     0.0,0.707;
-     0.707,-0.0;
-     -0.707,0.0;
-     0.0, -0.707]';
+%      0.5,-.5]';
+     0.3,1;
+     00.5,-1]';
+%      0.0,0.707;
+%      0.707,-0.0;
+%      -0.707,0.0;
+%      0.0, -0.707]';
  
 m = length(X); 
 
@@ -24,15 +24,15 @@ Xs = [reshape(Xg,d1*d2,1),reshape(Yg,d1*d2,1)]';
 n = length(Xs);
 
 sigma = 1;
-gamma = 0.5;
+gamma = 3;
 
 kernel = @(x,y)(sigma^2 * exp(-1/2 * gamma *(x - y)'*(x - y)));
 
-R = 1;
+R = sqrt(0.5^2 + 0.5^2);
 cen = [0.0, 0.0]';
-mean = @(x) 1/2/R*((x-cen)'*(x-cen) - R*2);
+mean = @(x) 1/2/R*((x-cen)'*(x-cen) - R^2);
 
-sigmaNoise = 0.5;
+sigmaNoise = 0.25;
 K = [];
 for i = 1:m
     for j = 1:m

@@ -1,7 +1,7 @@
 % GPIS learning
-% 1D example, zero mean
+% 2D example, Sphere mean and normals
 
-% close all; clear all; clc;
+close all; clear all; clc;
 
 X = [0,0;
      1,0;
@@ -35,8 +35,29 @@ colorbar;
 
 Ks = Ks';
 
+R = sqrt(0.5^2 + 0.5^2);
+cen = [0.0, 0.0]';
+mean = @(x) 1/2/R*((x-cen)'*(x-cen) - R^2);
+meandx = @(x) 1/2/R*(2*(x(1)-cen(1)));
+meandy = @(x) 1/2/R*(2*(x(2)-cen(2)));
+
+for i = 1:m
+    mu((i-1)*3 +1) = mean(X(:,i));
+    mu((i-1)*3 +2) = meandx(X(:,i));
+    mu((i-1)*3 +3) = meandy(X(:,i));
+end
+
+for i = 1:n
+    mus((i-1)*3 +1) = mean(Xs(:,i));
+    mus((i-1)*3 +2) = meandx(Xs(:,i));
+    mus((i-1)*3 +3) = meandy(Xs(:,i));
+end
+
+mu = mu';
+mus = mus';
+
 f = [0,-1,-1,  0, 1, -1, 0, 1, 1, 0, -1, 1]';
-fs = 0 + Ks'*inv(K)*(f);
+fs = mus + Ks'*inv(K)*(f - mu);
 sig = Kss' - Ks'*inv(K)*Ks;
 
 figure();
@@ -59,3 +80,13 @@ surf(Xg,Yg,Fs);
 surf(Xg,Yg,devFsN);
 surf(Xg,Yg,devFsP);
 axis([-2 0.5 -2 2 -2 2]);
+
+% Compute the inside probability.
+cdfBell = @(x) 0.5.*(1 + sign(x).*sqrt(1 - exp(-2/pi.*x.*x)));
+
+D = reshape(d(1:3:end), d1,d1);
+prob = cdfBell((0-Fs)./D);
+figure();
+hold on;
+surf(Xg,Yg,prob);
+

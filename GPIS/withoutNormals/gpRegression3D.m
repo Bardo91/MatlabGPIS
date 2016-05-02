@@ -144,6 +144,7 @@ pDevN = patch(  isosurface(Xg, Yg, Zg, devFsN, 0), ...
             
 daspect([1 1 1])
 view(3)
+plot3(X(1,:), X(2,:), X(3,:), 'r.', 'MarkerSize',40);
 camlight; lighting phong;
 
 
@@ -176,6 +177,7 @@ p1 = patch(  isosurface(Xg, Yg, Zg, prob, 1), ...
                 'FaceAlpha',0.5,...
                 'EdgeColor', 'none');
 daspect([1 1 1])
+plot3(X(1,:), X(2,:), X(3,:), 'r.', 'MarkerSize',40);
 view(3)
 camlight; lighting phong;
 % axis([0 1.5 0 1.5 0 1.5])

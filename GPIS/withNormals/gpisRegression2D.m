@@ -3,23 +3,32 @@
 
 close all; clear all; clc;
 
-X = [0,0;
-     1,0;
-     1,1;
-     0,1]';
+X = [-0.5,-0.5;
+     -0.5,0.5;
+     0.5,0.5]';
+ 
+f = [   0,-cos(45/180*pi),-sin(45/180*pi),...
+        0, -cos(45/180*pi), sin(45/180*pi),...
+        0, cos(45/180*pi), sin(45/180*pi)]';
 
 m = length(X); 
 
-[Xg,Yg] = meshgrid(-2:0.25:2,-2:0.25:2);
+[Xg,Yg] = meshgrid(-1.4:0.2:1.4,-1.4:0.2:1.4);
 [d1,d2] = size(Xg);
 Xs = [reshape(Xg,d1*d2,1),reshape(Yg,d1*d2,1)]';
 n = length(Xs);
 
 sigma = 1;
 gamma = 1;
-K = ComputeFullKder(sigma, gamma, X, 0, 0);
+
+display('Computing covariance matrix K');
+K = ComputeFullKder(sigma, gamma, X, 0.2, 0);
+
+display('Computing covariance matrix Ks');
 Ks = ComputeKderX1X2(sigma, gamma, Xs, X);
-Kss = ComputeKderX1X2(sigma, gamma, Xs, Xs);
+
+display('Computing covariance matrix Kss');
+Kss = ComputeFullKder(sigma, gamma, Xs, 0.2, 0.0);
 
 figure();
 imagesc(K);
@@ -34,6 +43,9 @@ imagesc(Kss);
 colorbar;
 
 Ks = Ks';
+
+
+display('Computing means');
 
 R = sqrt(0.5^2 + 0.5^2);
 cen = [0.0, 0.0]';
@@ -56,17 +68,14 @@ end
 mu = mu';
 mus = mus';
 
-f = [0,-1,-1,  0, 1, -1, 0, 1, 1, 0, -1, 1]';
+
+display('Computing Regression');
 fs = mus + Ks'*inv(K)*(f - mu);
 sig = Kss' - Ks'*inv(K)*Ks;
 
 figure();
 imagesc(sig);
 colorbar;
-
-figure();
-hold on;
-plot(X(1,:), X(2,:), 'r*');
 
 d = diag(sig);
 devFsP = fs + d;
@@ -76,10 +85,20 @@ devFsN = fs - d;
 devFsN = reshape(devFsN(1:3:end),d1,d2);
 
 Fs = reshape(fs(1:3:end),d1,d2);
+
+figure();
+hold on;
+plot(X(1,:), X(2,:), 'r.', 'MarkerSize',40);
 surf(Xg,Yg,Fs);
+contour(Xg,Yg,Fs,[0 0], 'LineWidth',2,'color', 'r');
+
+figure();
+hold on;
+plot(X(1,:), X(2,:), 'r.', 'MarkerSize',40);
+surf(Xg,Yg,Fs);
+contour(Xg,Yg,Fs,[0 0], 'LineWidth',2,'color', 'r');
 surf(Xg,Yg,devFsN);
 surf(Xg,Yg,devFsP);
-axis([-2 0.5 -2 2 -2 2]);
 
 % Compute the inside probability.
 cdfBell = @(x) 0.5.*(1 + sign(x).*sqrt(1 - exp(-2/pi.*x.*x)));

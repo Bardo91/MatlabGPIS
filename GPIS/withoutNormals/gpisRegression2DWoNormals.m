@@ -1,5 +1,5 @@
 % GPIS learning
-% 1D example, zero mean
+% 2D example, Sphere mean wo normals
 
 close all; clear all; clc;
 

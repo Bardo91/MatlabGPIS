@@ -11,6 +11,8 @@ f = [   0,-cos(45/180*pi),-sin(45/180*pi),...
         0, -cos(45/180*pi), sin(45/180*pi),...
         0, cos(45/180*pi), sin(45/180*pi)]';
 
+data = reshape(f, [3,length(X)])';
+
 m = length(X); 
 
 [Xg,Yg] = meshgrid(-1.4:0.2:1.4,-1.4:0.2:1.4);
@@ -85,6 +87,14 @@ devFsN = fs - d;
 devFsN = reshape(devFsN(1:3:end),d1,d2);
 
 Fs = reshape(fs(1:3:end),d1,d2);
+
+figure();
+hold on;
+plot(X(1,:), X(2,:), 'r.', 'MarkerSize',40);
+% surf(Xg,Yg,Fs);
+contour(Xg,Yg,Fs,[0 0], 'LineWidth',2,'color', 'r');
+quiver(X(1,:)', X(2,:)', data(:,2), data(:,3));
+
 
 figure();
 hold on;

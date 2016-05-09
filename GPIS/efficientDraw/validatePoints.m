@@ -1,5 +1,5 @@
 function [ cell, root ] = validatePoints( cell, root, evalFun )
-    if(length(cell{2}) == 0) %If has not childrens validate
+    if(cell{1} == 1 && isempty(cell{2})) %If has not childrens validate
         incX = cell{3}(2) - cell{3}(1);
         incY = cell{4}(2) - cell{4}(1);
         xup = cell{5} - [0,incY];
@@ -42,27 +42,26 @@ function [ cell, root ] = validatePoints( cell, root, evalFun )
         if(false) % regeneration disabled
            if(valup == 1)
                 if(res(2) == 0)
-                   [cell,root] = regenerateCell(root, xup, evalFun, root); 
+                   [cell2,root] = regenerateCell(root, xup, evalFun, root); 
                 end
             end
             if(valbot == 1)
                 if(res(2) == 0)
-                   [cell,root] = regenerateCell(root,xbot, evalFun, root); 
+                   [cell2,root] = regenerateCell(root,xbot, evalFun, root); 
                 end
             end
             if(valleft == 1)
                 if(res(2) == 0)
-                   [cell,root] = regenerateCell(root,xleft, evalFun, root); 
+                   [cell2,root] = regenerateCell(root,xleft, evalFun, root); 
                 end
             end
             if(valright == 1)
                 if(res(2) == 0)
-                   [cell,root] = regenerateCell(root,xright, evalFun, root); 
+                   [cell2,root] = regenerateCell(root,xright, evalFun, root); 
                 end
             end 
-        end
-        
-    else %If has childrens go deeper
+        end  
+    else if(~isempty(cell{2}))%If has childrens go deeper
         for i = 1:4
            if(cell{2}{i}{1} ~= 0)
                [cell{2}{i}, root] = validatePoints( cell{2}{i}, root, evalFun);

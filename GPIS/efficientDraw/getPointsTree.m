@@ -1,5 +1,5 @@
 function [ points, col ] = getPointsTree( points, col, cell, onlyNeg)
-    if(length(cell{2}) == 0)
+    if(isempty(cell{2}))
         if(cell{1}~=0)
           if(cell{6}(1) > 0)
               if(~onlyNeg)

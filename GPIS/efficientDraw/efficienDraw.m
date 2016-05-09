@@ -22,10 +22,10 @@ data = reshape(f, [3,length(X)])';
 m = length(X); 
 
 sigma = 0.1;
-gamma = 1;
+gamma = 10;
 
 display('Computing means');
-R = 0.5;
+R = 1;
 cen = [0.0, 0.0]';
 mean = @(x) 1/2/R*((x-cen)'*(x-cen) - R^2);
 meandx = @(x) 1/R*((x(1)-cen(1)));
@@ -41,7 +41,7 @@ end
 mu = mu';
 
 %% Efficiend draw
-iterations = 6;
+iterations = 7;
 
 xLimits = [-1.5, 1.5];
 yLimits = [-1.5, 1.5];
@@ -61,6 +61,7 @@ for iter=1:iterations
     % Expand tree
     root = expandCell(root, evalFun, 1);  
 end
+root = validatePoints(root, root);
 
 display('displaying')
 figure();

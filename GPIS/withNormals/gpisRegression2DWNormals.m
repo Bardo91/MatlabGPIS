@@ -27,7 +27,7 @@ Xs = [reshape(Xg,d1*d2,1),reshape(Yg,d1*d2,1)]';
 n = length(Xs);
 
 sigma = 0.1;
-gamma = 1;
+gamma = 10;
 
 display('Computing covariance matrix K');
 K = ComputeFullKder(sigma, gamma, X, 0, 0);

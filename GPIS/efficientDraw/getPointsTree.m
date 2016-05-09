@@ -1,16 +1,19 @@
-function [ points, col ] = getPointsTree( points, col, cell )
+function [ points, col ] = getPointsTree( points, col, cell, onlyNeg)
     if(length(cell{2}) == 0)
         if(cell{1}~=0)
-          points = [points; cell{5}];
           if(cell{6}(1) > 0)
-             col = [col; +1]; 
+              if(~onlyNeg)
+                 points = [points; cell{5}];
+                 col = [col; +1]; 
+              end
           else
-             col = [col;-1];
+            points = [points; cell{5}];
+            col = [col;-1];
           end
         end
     else
         for i = 1:4
-           [points, col] = getPointsTree(points, col, cell{2}{i});
+           [points, col] = getPointsTree(points, col, cell{2}{i}, onlyNeg);
         end
 
     end

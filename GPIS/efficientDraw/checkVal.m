@@ -1,7 +1,7 @@
 function  val  = checkVal( cell, X )
-    val = nan;
+    val = [nan, 0];
     if(length(cell{2}) == 0) %If has not childrens check value
-        val = cell{6}(1);
+        val = [cell{6}(1), cell{1}];
     else
         for i=1:4
            if(isInBounds(X, cell{2}{i}{3}, cell{2}{i}{4}))

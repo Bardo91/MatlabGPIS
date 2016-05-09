@@ -1,4 +1,4 @@
-function [ cell ] = validatePoints( cell, root )
+function [ cell, root ] = validatePoints( cell, root, evalFun )
     if(length(cell{2}) == 0) %If has not childrens validate
         incX = cell{3}(2) - cell{3}(1);
         incY = cell{4}(2) - cell{4}(1);
@@ -8,22 +8,26 @@ function [ cell ] = validatePoints( cell, root )
         xright = cell{5} + [incX,0];
         
         if(isInBounds(xup, root{3}, root{4}))
-            valup = sign(checkVal(root, xup));
+            res = checkVal(root, xup);
+            valup = sign(res(1));
         else
             valup = sign(cell{6}(1));
         end
         if(isInBounds(xbot, root{3}, root{4}))
-            valbot = sign(checkVal(root, xbot));
+            res = checkVal(root, xbot);
+            valbot = sign(res(1));
         else
             valbot = sign(cell{6}(1));
         end
         if(isInBounds(xleft, root{3}, root{4}))
-            valleft = sign(checkVal(root, xleft));
+            res = checkVal(root, xleft);
+            valleft = sign(res(1));
         else
             valleft = sign(cell{6}(1));
         end
         if(isInBounds(xright, root{3}, root{4}))
-            valright = sign(checkVal(root, xright));
+            res = checkVal(root, xright);
+            valright = sign(res(1));
         else
             valright = sign(cell{6}(1));
         end
@@ -34,10 +38,34 @@ function [ cell ] = validatePoints( cell, root )
            cell{1} = 2;
         end
         
+%         if(cell{6}(1) < 0)
+        if(false) % regeneration disabled
+           if(valup == 1)
+                if(res(2) == 0)
+                   [cell,root] = regenerateCell(root, xup, evalFun, root); 
+                end
+            end
+            if(valbot == 1)
+                if(res(2) == 0)
+                   [cell,root] = regenerateCell(root,xbot, evalFun, root); 
+                end
+            end
+            if(valleft == 1)
+                if(res(2) == 0)
+                   [cell,root] = regenerateCell(root,xleft, evalFun, root); 
+                end
+            end
+            if(valright == 1)
+                if(res(2) == 0)
+                   [cell,root] = regenerateCell(root,xright, evalFun, root); 
+                end
+            end 
+        end
+        
     else %If has childrens go deeper
         for i = 1:4
            if(cell{2}{i}{1} ~= 0)
-               cell{2}{i} = validatePoints( cell{2}{i}, root);
+               [cell{2}{i}, root] = validatePoints( cell{2}{i}, root, evalFun);
            end
         end
     end

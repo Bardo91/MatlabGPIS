@@ -112,7 +112,7 @@ end
 mu = mu';
 
 %% Efficiend draw
-iterations = 5;
+iterations = 4;
 
 xLimits = [-1.5, 1.5];
 yLimits = [-1.5, 1.5];
@@ -123,29 +123,40 @@ root = {2,  {}, xLimits, yLimits, centroid, -1};
 Qmat = inv(K)*(f - mu);
 
 evalFun = @(x) [mean(x), meandx(x), meandy(x)]' + ComputeKderX1X2(sigma, gamma, x, X)*Qmat;
+tic
 root = expandCell(root,evalFun, 2);
 root = expandCell(root,evalFun, 2);
+% root = expandCell(root,evalFun, 2);
+% root = expandCell(root,evalFun, 2);
 for iter=1:iterations
     % Validate branches
-    root = validatePoints(root, root);
+    root = validatePoints(root, root, evalFun);
+    
+%     figure();points = [];
+%     cols = [];
+%     [points, cols] = getPointsTree(points, cols, root,false);
+%     plot3(points(:,1), points(:,2), cols, 'o')
+%     pause();
+%     close all;
     
     % Expand tree
     root = expandCell(root, evalFun, 1);  
 end
-root = validatePoints(root, root);
-
-display('displaying')
+root = validatePoints(root, root, evalFun);
+toc
 figure();
 hold on;
 plot(X(1,:), X(2,:), 'r.', 'MarkerSize',40);
 points = [];
 cols = [];
-[points, cols] = getPointsTree(points, cols, root);
-plot3(points(:,1), points(:,2), cols, 'o')
+% [points, cols] = getPointsTree(points, cols, root,false);
+% plot3(points(:,1), points(:,2), cols, 'o')
 quiver(X(1,:)', X(2,:)', data(:,2), data(:,3));
 grid;
 axis([-1.5 1.5 -1.5 1.5]);
 
+surface = getPointsTree(points, cols, root, true);
+plot(surface(:,1), surface(:,2), 'go');
 %% Ground Truth
 [Xg,Yg] = meshgrid(-1.4:0.2:1.4,-1.4:0.2:1.4);
 [d1,d2] = size(Xg);
@@ -163,7 +174,6 @@ Kss = ComputeFullKder(sigma, gamma, Xs, noiseVal, noiseGrad);
 
 fs = mus + Ks'*inv(K)*(f - mu);
 sig = Kss' - Ks'*inv(K)*Ks;
-
 
 Fs = reshape(fs(1:3:end),d1,d2);
 

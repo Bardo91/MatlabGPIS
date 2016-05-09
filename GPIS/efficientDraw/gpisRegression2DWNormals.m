@@ -37,13 +37,14 @@ for i = 1:m
 end
 mu = mu';
 
-iterations = 4;
+iterations = 6;
 
-xLimits = [-1.5, 1.5];
-yLimits = [-1.5, 1.5];
+xLimits = [-2.0, 2.0];
+yLimits = [-2.0, 2.0];
 centroid = [sum(xLimits)/2, sum(yLimits)/2];
 
-root = {2,  {}, xLimits, yLimits, centroid};
+% 2 valid, 1 new, 0 invalid.
+root = {2,  {}, xLimits, yLimits, centroid, -1};
 Qmat = inv(K)*(f - mu);
 
 evalFun = @(x) [mean(x), meandx(x), meandy(x)]' + ComputeKderX1X2(sigma, gamma, x, X)*Qmat;
@@ -81,6 +82,10 @@ display('displaying')
 figure();
 hold on;
 plot(X(1,:), X(2,:), 'r.', 'MarkerSize',40);
-% contour(Xg,Yg,Fs,[0 0], 'LineWidth',2,'color', 'r');
+points = [];
+cols = [];
+[points, cols] = getPointsTree(points, cols, root);
+plot3(points(:,1), points(:,2), cols, 'o')
 quiver(X(1,:)', X(2,:)', data(:,2), data(:,3));
-
+grid;
+axis([-2 2 -2 2]);

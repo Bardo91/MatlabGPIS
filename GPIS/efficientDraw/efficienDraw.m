@@ -7,18 +7,16 @@ close all; clear all; clc;
 X = [0,-0.5;
     -0.3,-0.1;
     0.5,-1.0;
-    0.4,-0.9;
-    0.6,-0.9;
      -0.5,0.5;
-     0.5,0.5]';
+     0.5,0.5;
+    1,0]';
 
 f = [   0,-cos(20/180*pi),-sin(20/180*pi),...
         0,-cos(45/180*pi),-sin(45/180*pi),...
         0,-cos(120/180*pi),-sin(120/180*pi),...
-        0,-cos(100/180*pi),-sin(100/180*pi),...
-        0,-cos(140/180*pi),-sin(140/180*pi),...
         0, -cos(45/180*pi), sin(45/180*pi),...
-        0, cos(45/180*pi), sin(45/180*pi)]';
+        0, cos(45/180*pi), sin(45/180*pi),...
+        0,1,0]';
 
 data = reshape(f, [3,length(X)])';
 m = length(X); 
@@ -27,14 +25,14 @@ sigma = 0.1;
 gamma = 1;
 
 display('Computing means');
-R = sqrt(0.5^2 + 0.5^2);
+R = 0.5;
 cen = [0.0, 0.0]';
 mean = @(x) 1/2/R*((x-cen)'*(x-cen) - R^2);
-meandx = @(x) 1/2/R*(2*(x(1)-cen(1)));
-meandy = @(x) 1/2/R*(2*(x(2)-cen(2)));
+meandx = @(x) 1/R*((x(1)-cen(1)));
+meandy = @(x) 1/R*((x(2)-cen(2)));
 
 display('Computing mean and covariance of data');
-K = ComputeFullKder(sigma, gamma, X, 0.2, 0);
+K = ComputeFullKder(sigma, gamma, X, 0, 0);
 for i = 1:m
     mu((i-1)*3 +1) = mean(X(:,i));
     mu((i-1)*3 +2) = meandx(X(:,i));
@@ -101,5 +99,4 @@ figure();
 hold on;
 plot(X(1,:), X(2,:), 'r.', 'MarkerSize',40);
 contour(Xg,Yg,Fs,[0 0], 'LineWidth',2,'color', 'r');
-plot3(points(:,1), points(:,2), cols, 'o')
 quiver(X(1,:)', X(2,:)', data(:,2), data(:,3));

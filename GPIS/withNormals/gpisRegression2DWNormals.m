@@ -30,13 +30,13 @@ sigma = 0.1;
 gamma = 1;
 
 display('Computing covariance matrix K');
-K = ComputeFullKder(sigma, gamma, X, 0.0001, 0);
+K = ComputeFullKder(sigma, gamma, X, 0, 0);
 
 display('Computing covariance matrix Ks');
 Ks = ComputeKderX1X2(sigma, gamma, Xs, X);
 
 display('Computing covariance matrix Kss');
-Kss = ComputeFullKder(sigma, gamma, Xs, 0.001, 0.0);
+Kss = ComputeFullKder(sigma, gamma, Xs, 0, 0.0);
 
 figure();
 imagesc(K);
@@ -50,12 +50,10 @@ figure();
 imagesc(Kss);
 colorbar;
 
-Ks = Ks';
-
 
 display('Computing means');
 
-R = sqrt(0.5^2 + 0.5^2);
+R = 0.5;
 cen = [0.0, 0.0]';
 mean = @(x) 1/2/R*((x-cen)'*(x-cen) - R^2);
 meandx = @(x) 1/R*((x(1)-cen(1)));
@@ -78,8 +76,9 @@ mus = mus';
 
 
 display('Computing Regression');
-fs = mus + Ks'*inv(K)*(f - mu);
-sig = Kss' - Ks'*inv(K)*Ks;
+kinv = inv(K);
+fs = mus + Ks*kinv*(f - mu);
+sig = Kss - Ks*kinv*Ks';
 
 figure();
 imagesc(sig);
@@ -97,7 +96,6 @@ Fs = reshape(fs(1:3:end),d1,d2);
 figure();
 hold on;
 plot(X(1,:), X(2,:), 'r.', 'MarkerSize',40);
-% surf(Xg,Yg,Fs);
 contour(Xg,Yg,Fs,[0 0], 'LineWidth',2,'color', 'r');
 quiver(X(1,:)', X(2,:)', data(:,2), data(:,3));
 
@@ -108,13 +106,13 @@ plot(X(1,:), X(2,:), 'r.', 'MarkerSize',40);
 surf(Xg,Yg,Fs);
 contour(Xg,Yg,Fs,[0 0], 'LineWidth',2,'color', 'r');
 
-figure();
-hold on;
-plot(X(1,:), X(2,:), 'r.', 'MarkerSize',40);
-surf(Xg,Yg,Fs);
-contour(Xg,Yg,Fs,[0 0], 'LineWidth',2,'color', 'r');
-surf(Xg,Yg,devFsN);
-surf(Xg,Yg,devFsP);
+% figure();
+% hold on;
+% plot(X(1,:), X(2,:), 'r.', 'MarkerSize',40);
+% surf(Xg,Yg,Fs);
+% contour(Xg,Yg,Fs,[0 0], 'LineWidth',2,'color', 'r');
+% surf(Xg,Yg,devFsN);
+% surf(Xg,Yg,devFsP);
 
 % Compute the inside probability.
 cdfBell = @(x) 0.5.*(1 + sign(x).*sqrt(1 - exp(-2/pi.*x.*x)));

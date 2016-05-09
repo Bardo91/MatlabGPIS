@@ -3,22 +3,27 @@
 
 close all; clear all; clc;
 
+%% Data
 X = [0,-0.5;
     -0.3,-0.1;
     0.5,-1.0;
+    0.4,-0.9;
+    0.6,-0.9;
      -0.5,0.5;
      0.5,0.5]';
 
 f = [   0,-cos(20/180*pi),-sin(20/180*pi),...
         0,-cos(45/180*pi),-sin(45/180*pi),...
         0,-cos(120/180*pi),-sin(120/180*pi),...
+        0,-cos(100/180*pi),-sin(100/180*pi),...
+        0,-cos(140/180*pi),-sin(140/180*pi),...
         0, -cos(45/180*pi), sin(45/180*pi),...
         0, cos(45/180*pi), sin(45/180*pi)]';
 
 data = reshape(f, [3,length(X)])';
 m = length(X); 
 
-sigma = 1;
+sigma = 0.1;
 gamma = 1;
 
 display('Computing means');
@@ -37,6 +42,7 @@ for i = 1:m
 end
 mu = mu';
 
+%% Efficiend draw
 iterations = 6;
 
 xLimits = [-1.5, 1.5];
@@ -69,3 +75,31 @@ plot3(points(:,1), points(:,2), cols, 'o')
 quiver(X(1,:)', X(2,:)', data(:,2), data(:,3));
 grid;
 axis([-1.5 1.5 -1.5 1.5]);
+
+%% Ground Truth
+[Xg,Yg] = meshgrid(-1.4:0.2:1.4,-1.4:0.2:1.4);
+[d1,d2] = size(Xg);
+Xs = [reshape(Xg,d1*d2,1),reshape(Yg,d1*d2,1)]';
+n = length(Xs);
+
+for i = 1:n
+    mus((i-1)*3 +1) = mean(Xs(:,i));
+    mus((i-1)*3 +2) = meandx(Xs(:,i));
+    mus((i-1)*3 +3) = meandy(Xs(:,i));
+end
+mus = mus';
+Ks = ComputeKderX1X2(sigma, gamma, Xs, X)';
+Kss = ComputeFullKder(sigma, gamma, Xs, 0.2, 0.0);
+
+fs = mus + Ks'*inv(K)*(f - mu);
+sig = Kss' - Ks'*inv(K)*Ks;
+
+
+Fs = reshape(fs(1:3:end),d1,d2);
+
+figure();
+hold on;
+plot(X(1,:), X(2,:), 'r.', 'MarkerSize',40);
+contour(Xg,Yg,Fs,[0 0], 'LineWidth',2,'color', 'r');
+plot3(points(:,1), points(:,2), cols, 'o')
+quiver(X(1,:)', X(2,:)', data(:,2), data(:,3));

@@ -39,8 +39,8 @@ mu = mu';
 
 iterations = 6;
 
-xLimits = [-2.0, 2.0];
-yLimits = [-2.0, 2.0];
+xLimits = [-1.5, 1.5];
+yLimits = [-1.5, 1.5];
 centroid = [sum(xLimits)/2, sum(yLimits)/2];
 
 % 2 valid, 1 new, 0 invalid.
@@ -48,35 +48,15 @@ root = {2,  {}, xLimits, yLimits, centroid, -1};
 Qmat = inv(K)*(f - mu);
 
 evalFun = @(x) [mean(x), meandx(x), meandy(x)]' + ComputeKderX1X2(sigma, gamma, x, X)*Qmat;
-
+root = expandCell(root,evalFun, 2);
+root = expandCell(root,evalFun, 2);
 for iter=1:iterations
-    % Expand tree
-    root = expandCell(root,evalFun);
-    
     % Validate branches
+    root = validatePoints(root, root);
     
+    % Expand tree
+    root = expandCell(root, evalFun, 1);  
 end
-
-% [Xg,Yg] = meshgrid(-1.4:0.2:1.4,-1.4:0.2:1.4);
-% [d1,d2] = size(Xg);
-% Xs = [reshape(Xg,d1*d2,1),reshape(Yg,d1*d2,1)]';
-% n = length(Xs);
-
-% display('Computing covariance matrix Ks');
-% Ks = ComputeKderX1X2(sigma, gamma, Xs, X);
-% Ks = Ks';
-% 
-% for i = 1:n
-%     mus((i-1)*3 +1) = mean(Xs(:,i));
-%     mus((i-1)*3 +2) = meandx(Xs(:,i));
-%     mus((i-1)*3 +3) = meandy(Xs(:,i));
-% end
-% 
-% mus = mus';
-% 
-% display('Computing Regression');
-% fs = mus + Ks'*inv(K)*(f - mu);
-% sig = Kss' - Ks'*inv(K)*Ks;
 
 display('displaying')
 figure();
@@ -88,4 +68,4 @@ cols = [];
 plot3(points(:,1), points(:,2), cols, 'o')
 quiver(X(1,:)', X(2,:)', data(:,2), data(:,3));
 grid;
-axis([-2 2 -2 2]);
+axis([-1.5 1.5 -1.5 1.5]);

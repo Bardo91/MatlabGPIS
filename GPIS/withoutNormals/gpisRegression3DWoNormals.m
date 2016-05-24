@@ -2,17 +2,23 @@
 % 1D example, zero mean
 
 close all; clear all; clc;
+% 
+% X = [1,0,0;
+%     0,1,0;
+%     0,0,1;
+% %     -0.5774,-0.5774,-0.5774]';
+%     -1,-1,-1]';
+AppleData;
 
-X = [1,0,0;
-    0,1,0;
-    0,0,1;
-%     -0.5774,-0.5774,-0.5774]';
-    -1,-1,-1]';
+X = X(:,1:10:end);
+
+X = X(:,X(1,:) < 0);
+
 m = length(X); 
 
 f = zeros(m,1);
 
-[Xg,Yg, Zg] = meshgrid(-1.75:0.25:1.5,-1.75:0.25:1.5,-1.75:0.25:1.5);
+[Xg,Yg, Zg] = meshgrid(-0.05:0.01:0.05,-0.05:0.01:0.05,-0.05:0.01:0.05);
 [d1,d2] = size(Xg);
 Xs = [reshape(Xg,d1*d2,1),reshape(Yg,d1*d2,1),reshape(Zg,d1*d2,1)]';
 n = length(Xs);
@@ -44,19 +50,19 @@ end
 
 display('Computing covariance matrix Kss');
 Kss = zeros(n,n);
-
-if n > 4000
-    delete(gcp)
-    parpool(4)
-    parfor  i = 1:n
-        for j = 1:n
-           Kss(i,j) = kernel(Xs(:,i), Xs(:,j));
-           if(i == j)
-               Kss(i,j) = Kss(i,j) + sigmaNoise*sigmaNoise;
-           end
-        end
-    end
-else
+% 
+% if n > 4000
+%     delete(gcp)
+%     parpool(4)
+%     parfor  i = 1:n
+%         for j = 1:n
+%            Kss(i,j) = kernel(Xs(:,i), Xs(:,j));
+%            if(i == j)
+%                Kss(i,j) = Kss(i,j) + sigmaNoise*sigmaNoise;
+%            end
+%         end
+%     end
+% else
    for  i = 1:n
          for j = 1:n
            Kss(i,j) = kernel(Xs(:,i), Xs(:,j));
@@ -66,7 +72,7 @@ else
         end
     end 
 
-end
+% end
 
 figure();
 imagesc(K);
@@ -80,24 +86,25 @@ figure();
 imagesc(Kss);
 colorbar;
 
-R = 1;
+R = 0.3;
 cen = [0.0, 0.0, 0.0]';
 mean = @(x) 1/2/R*((x-cen)'*(x-cen) - R^2);
 
 display('Computing mean vectors');
+mu = zeros(m,1);
 for i = 1:m
     mu(i) = mean(X(:,i));
 end
 
+mus = zeros(n,1);
 for i = 1:n
     mus(i) = mean(Xs(:,i));
 end
-mu = mu';
-mus = mus';
 
 display('Computing regression');
-fs = mus + Ks'*inv(K)*(f - mu);
-sig = Kss' - Ks'*inv(K)*Ks;
+kinv = inv(K);
+fs = mus + Ks'*kinv*(f - mu);
+sig = Kss' - Ks'*kinv*Ks;
 
 figure();
 imagesc(sig);
@@ -180,4 +187,16 @@ daspect([1 1 1])
 plot3(X(1,:), X(2,:), X(3,:), 'r.', 'MarkerSize',40);
 view(3)
 camlight; lighting phong;
-% axis([0 1.5 0 1.5 0 1.5])
+
+figure()
+hold on;
+plot3(X(1,:), X(2,:), X(3,:), 'r.', 'MarkerSize',40);
+p = patch(isosurface(Xg, Yg, Zg, Fs, 0),'FaceAlpha',0.7);
+p.FaceColor = 'green';
+p.EdgeColor = 'none';
+daspect([1 1 1])
+view(3)
+camlight; lighting phong;
+colormap('default');   % set colormap
+contourf(Xg(:,:,1),Yg(:,:,1),prob(:,:,floor(d1/2)));        % draw image and scale colormap to values range
+colorbar;

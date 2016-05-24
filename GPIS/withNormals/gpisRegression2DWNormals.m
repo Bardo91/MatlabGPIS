@@ -3,19 +3,30 @@
 
 close all; clear all; clc;
 
-X = [0,-0.5;
-    -0.3,-0.1;
-    0.5,-1.0;
-     -0.5,0.5;
-     0.5,0.5;
-    1,0]';
+% X = [0,-0.5;
+%     -0.3,-0.1;
+%     0.5,-1.0;
+%      -0.5,0.5;
+%      0.5,0.5;
+%     1,0]';
+% 
+% f = [   0,-cos(20/180*pi),-sin(20/180*pi),...
+%         0,-cos(45/180*pi),-sin(45/180*pi),...
+%         0,-cos(120/180*pi),-sin(120/180*pi),...
+%         0, -cos(45/180*pi), sin(45/180*pi),...
+%         0, cos(45/180*pi), sin(45/180*pi),...
+%         0,1,0]';
 
-f = [   0,-cos(20/180*pi),-sin(20/180*pi),...
-        0,-cos(45/180*pi),-sin(45/180*pi),...
-        0,-cos(120/180*pi),-sin(120/180*pi),...
-        0, -cos(45/180*pi), sin(45/180*pi),...
-        0, cos(45/180*pi), sin(45/180*pi),...
+X = [0,-1;
+    0,1;
+    -1,0;
+     1,0]';
+
+f = [   0,0,-1,...
+        0,cos(0/180*pi),sin(0/180*pi),...
+        0,-1,0,...
         0,1,0]';
+
 
 data = reshape(f, [3,length(X)])';
 
@@ -30,13 +41,13 @@ sigma = 0.1;
 gamma = 10;
 
 display('Computing covariance matrix K');
-K = ComputeFullKder(sigma, gamma, X, 0, 0);
+K = ComputeFullKder(sigma, gamma, X, 0.0, 0.0);
 
 display('Computing covariance matrix Ks');
 Ks = ComputeKderX1X2(sigma, gamma, Xs, X);
 
 display('Computing covariance matrix Kss');
-Kss = ComputeFullKder(sigma, gamma, Xs, 0, 0.0);
+Kss = ComputeFullKder(sigma, gamma, Xs, 0.0, 0.0);
 
 figure();
 imagesc(K);
@@ -53,7 +64,7 @@ colorbar;
 
 display('Computing means');
 
-R = 0.5;
+R = 1;
 cen = [0.0, 0.0]';
 mean = @(x) 1/2/R*((x-cen)'*(x-cen) - R^2);
 meandx = @(x) 1/R*((x(1)-cen(1)));

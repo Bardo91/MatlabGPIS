@@ -26,11 +26,11 @@ close all; clear all; clc;
 
 AppleData;
 
-X = appleLoc(1:50:end,:)';
-norms = appleNorm(1:50:end,:)';
+X = appleLoc(1:25:end,:)';
+norms = appleNorm(1:25:end,:)';
 
-% X = X(:,X(1,:) < 0);
-% norms = norms(:,X(1,:) < 0);
+norms = norms(:,X(1,:) < 0);
+X = X(:,X(1,:) < 0);
 
 absmax = max(abs(X'))';
 m = length(X); 
@@ -58,7 +58,7 @@ lim=2;
 % meandz = @(x) 1/R*((x(3)-cen(3)));
 
 % No prior
-sigma = 0.75;%0.5395;
+sigma = 0.1;%0.5395;
 gamma = 10;%10.43;    
 noiseVals = 1e-3;
 noiseGrad = 0.03;
@@ -109,12 +109,12 @@ mus = mus';
 display('Computing regression');
 kinv = inv(K);
 fs = mus + Ks*kinv*(f - mu);
-sig = Kss - Ks*kinv*Ks';
+sig = - Ks*kinv*Ks';
 
 
 Fs = reshape(fs(1:4:end),d1,d1,d1);
 
-d = diag(sig);
+d =diag(Kss)+ diag(sig);
 devFsP = fs + d;
 devFsP = reshape(devFsP(1:4:end),d1,d1,d1);
 

@@ -47,32 +47,23 @@ step = 0.1;
 lim=1.3;
 
 % %  spherical mean
-% sigma = 0.4; 
-% gamma = 100; 
-% noiseVals = 5e-6; 
-% noiseGrad = 0.02; 
+% sigma = 0.4;
+% gamma = 100;    
+% noiseVals = 5e-6;
+% noiseGrad = 0.02;
 % R = 1;
 % cen = [0.0, 0.0, 0.0]';
 % mean = @(x)1/2/R*((x-cen)'*(x-cen) - R^2);
 % meandx = @(x) 1/R*((x(1)-cen(1)));
 % meandy = @(x) 1/R*((x(2)-cen(2)));
 % meandz = @(x) 1/R*((x(3)-cen(3)));
-% prior = struct( 'pos',[0 0 0],'type','N',...
-%                 'param', [1 1 1], 'rot', [2*pi 0 0],...
-%                 'Sigma', sigma, 'Gamma', gamma,...
-%                 'noiseVals', noiseVals, 'noiseGrad', noiseGrad);
-            
-% No prior
-sigma = 0.11;%0.5395;
-gamma = 11.2;%10.43;    
-noiseVals = 1.17e-5;
-noiseGrad = 5.87e-4;
-meanLevel = 0.17;
 
-prior = struct( 'pos',[0 0 0],'type','N',...
-                'param', [meanLevel 1 1], 'rot', [2*pi 0 0],...
-                'Sigma', sigma, 'Gamma', gamma,...
-                'noiseVals', noiseVals, 'noiseGrad', noiseGrad);
+% No prior
+sigma = 0.1;%0.5395;
+gamma = 5;%10.43;    
+noiseVals = 0.05;
+noiseGrad = 0.2;
+meanLevel = 0.1;
 
 mean = @(x)meanLevel;
 meandx = @(x)0;
@@ -132,11 +123,14 @@ cdfBell = @(x) 0.5.*(1 + sign(x).*sqrt(1 - exp(-2/pi.*x.*x)));
 D = reshape(d(1:4:end), d1,d2,d3);
 prob = cdfBell((0-Fs)./D);
 
-
+prior = struct( 'pos',[0 0 0],'type','N',...
+                'param', [1 1 1], 'rot', [2*pi 0 0],...
+                'Sigma', sigma, 'Gamma', gamma,...
+                'noiseVals', noiseVals, 'noiseGrad', noiseGrad);
 
 [meanValue, meanGrad] = computePriorFunctions(prior)
 %% Accurate plot
-[faces, vertices] = computeSurface(X, norms, prior, meanValue, meanGrad, X(:,1:20:end), 0.05, false);
+[faces, vertices] = computeSurface(X, norms, prior, meanValue, meanGrad, X(:,1:3:end), 0.05, false);
 
 figure
 hold on
@@ -158,7 +152,7 @@ colorbar;
 view([-37.5 30])
 
 figure
-% subplot(1,4,1)
+subplot(1,4,1)
 hold on
 axis equal
 plot3(X(1,:),X(2,:),X(3,:),'r.','markersize',30);
@@ -173,20 +167,14 @@ set(gca,'view',[46.8000   18.8000]);
 light('Position',[-1 -1 0])
 view([-37.5 30])
 
-figure
-% subplot(1,4,2)
+subplot(1,4,2)
 contourf(Xg(:,:,1),Yg(:,:,1),prob(:,:,1));        % draw image and scale colormap to values range
 colorbar;
-axis equal
 
-figure
-% subplot(1,4,3)
+subplot(1,4,3)
 contourf(Xg(:,:,1),Yg(:,:,1),prob(:,:,2));        % draw image and scale colormap to values range
 colorbar;
-axis equal
 
-figure
-% subplot(1,4,4)
+subplot(1,4,4)
 contourf(Xg(:,:,1),Yg(:,:,1),prob(:,:,3));        % draw image and scale colormap to values range
 colorbar;
-axis equal

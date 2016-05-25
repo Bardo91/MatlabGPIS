@@ -2,94 +2,87 @@
 % 1D example, zero mean
 
 close all; clear all; clc;
-
+% 
 % X = [1,0,0;
 %     0,1,0;
 %     0,0,1;
 % %     -0.5774,-0.5774,-0.5774]';
 %     -1,-1,-1]';
 % 
-% sigma = 0.75;
-% gamma = 1;
+% m = length(X); 
+% norms = [   1 0 0 -sqrt(3);
+%             0 1 0 -sqrt(3);
+%             0 0 1 -sqrt(3)]';
+% f = [   0,1,0,0,...
+%         0,0,1,0,...
+%         0,0,0,1,...
+%         0,-sqrt(3),-sqrt(3),-sqrt(3)   ]';
+% 
 % step = 0.5;
 % lim=2;
+% sigma = 0.5;
+% gamma = 1;
 % R = 1;
-% 
 
 AppleData;
 
-X = X(:,1:50:end);
+X = appleLoc(1:50:end,:)';
+norms = appleNorm(1:50:end,:)';
+
+% X = X(:,X(1,:) < 0);
+% norms = norms(:,X(1,:) < 0);
+
 absmax = max(abs(X'))';
 m = length(X); 
 for i = 1:m
     X(:,i) = X(:,i)./absmax;
 end
 
-% X = X(:,X(1,:) < 0);
-
-sigma = 0.5;
-gamma = 1;
-step = 0.5;
-lim=2;
-R = 1;
-
-m = length(X); 
 f = zeros(m,1);
+f = [f,norms'];
+[a b] = size(f);
+f = reshape(f', a*b, 1);
+
+step = 0.25;
+lim=2;
+%  spherical mean
+% sigma = 0.0098;
+% gamma = 400;    
+% noiseVal = 5e-6;
+% noiseGrad = 0.02;
+% R = 1;
+% cen = [0.0, 0.0, 0.0]';
+% mean = @(x)1/2/R*((x-cen)'*(x-cen) - R^2);
+% meandx = @(x) 1/R*((x(1)-cen(1)));
+% meandy = @(x) 1/R*((x(2)-cen(2)));
+% meandz = @(x) 1/R*((x(3)-cen(3)));
+
+% No prior
+sigma = 0.75;%0.5395;
+gamma = 10;%10.43;    
+noiseVal = 1e-3;
+noiseGrad = 0.03;
+meanLevel = 0.1;
+
+mean = @(x)meanLevel;
+meandx = @(x)0;
+meandy = @(x)0;
+meandz = @(x)0;
 
 [Xg,Yg, Zg] = meshgrid(-lim:step:lim,-lim:step:lim,-lim:step:lim);
 [d1,d2] = size(Xg);
 Xs = [reshape(Xg,d1*d2,1),reshape(Yg,d1*d2,1),reshape(Zg,d1*d2,1)]';
 n = length(Xs);
 
-
-
-kernel = @(x,y)(sigma^2 * exp(-1/2 * gamma *(x - y)'*(x - y)));
-
 display('Computing covariance matrix K');
-sigmaNoise = 0.01;
-K = [];
-for i = 1:m
-    for j = 1:m
-       K(i,j) = kernel(X(:,i), X(:,j));
-       if(i == j)
-           K(i,j) = K(i,j) + sigmaNoise*sigmaNoise;
-       end
-    end
-end
+K = ComputeFullKder(sigma, gamma, X, 0.0, 0.0);
 
 display('Computing covariance matrix Ks');
-Ks = [];
-for i = 1:m
-    for j = 1:n
-       Ks(i,j) = kernel(X(:,i), Xs(:,j)); 
-    end
-end
+Ks = ComputeKderX1X2(sigma, gamma, Xs, X);
 
 display('Computing covariance matrix Kss');
-Kss = zeros(n,n);
-% 
-% if n > 4000
-%     delete(gcp)
-%     parpool(4)
-%     parfor  i = 1:n
-%         for j = 1:n
-%            Kss(i,j) = kernel(Xs(:,i), Xs(:,j));
-%            if(i == j)
-%                Kss(i,j) = Kss(i,j) + sigmaNoise*sigmaNoise;
-%            end
-%         end
-%     end
-% else
-   for  i = 1:n
-         for j = 1:n
-           Kss(i,j) = kernel(Xs(:,i), Xs(:,j));
-           if(i == j)
-               Kss(i,j) = Kss(i,j) + sigmaNoise*sigmaNoise;
-           end
-        end
-    end 
+Kss = ComputeFullKder(sigma, gamma, Xs, 0.0, 0.0);
 
-% end
 
 figure();
 imagesc(K);
@@ -103,34 +96,48 @@ figure();
 imagesc(Kss);
 colorbar;
 
-cen = [0.0, 0.0, 0.0]';
-mean = @(x) 1/2/R*((x-cen)'*(x-cen) - R^2);
-% mean = @(x) 0;
+display('Computing means');
 
-display('Computing mean vectors');
-mu = zeros(m,1);
 for i = 1:m
-    mu(i) = mean(X(:,i));
+    mu((i-1)*4 +1) = mean(X(:,i));
+    mu((i-1)*4 +2) = meandx(X(:,i));
+    mu((i-1)*4 +3) = meandy(X(:,i));
+    mu((i-1)*4 +4) = meandz(X(:,i));
 end
 
-mus = zeros(n,1);
 for i = 1:n
-    mus(i) = mean(Xs(:,i));
+    mus((i-1)*4 +1) = mean(Xs(:,i));
+    mus((i-1)*4 +2) = meandx(Xs(:,i));
+    mus((i-1)*4 +3) = meandy(Xs(:,i));
+    mus((i-1)*4 +4) = meandz(Xs(:,i));
 end
+
+mu = mu';
+mus = mus';
 
 display('Computing regression');
 kinv = inv(K);
-fs = mus + Ks'*kinv*(f - mu);
-sig = Kss' - Ks'*kinv*Ks;
+fs = mus + Ks*kinv*(f - mu);
+sig = Kss' - Ks*kinv*Ks';
 
 figure();
 imagesc(sig);
 colorbar;
 
-Fs = reshape(fs,d1,d1,d1);
+Fs = reshape(fs(1:4:end),d1,d1,d1);
+
+d = diag(sig);
+devFsP = fs + d;
+devFsP = reshape(devFsP(1:4:end),d1,d1,d1);
+
+devFsN = fs - d;
+devFsN = reshape(devFsN(1:4:end),d1,d1,d1);
+
 figure();
 hold on;
 plot3(X(1,:), X(2,:), X(3,:), 'r.', 'MarkerSize',40);
+quiver3(X(1,:), X(2,:), X(3,:), norms(1,:), norms(2,:), norms(3,:));
+
 p = patch(isosurface(Xg, Yg, Zg, Fs, 0));
 p.FaceColor = 'green';
 p.EdgeColor = 'none';
@@ -138,16 +145,6 @@ daspect([1 1 1])
 view(3)
 camlight; lighting phong;
 
-
-d = diag(sig);
-devFsP = fs - d;
-devFsP = reshape(devFsP,d1,d2);
-
-devFsN = fs + d;
-devFsN = reshape(devFsN,d1,d2);
-
-devFsN = reshape(devFsN,d1,d1,d1);
-devFsP = reshape(devFsP,d1,d1,d1);
 
 figure();
 hold on;
@@ -176,7 +173,7 @@ display('Computing the inside probability');
 % Compute the inside probability.
 cdfBell = @(x) 0.5.*(1 + sign(x).*sqrt(1 - exp(-2/pi.*x.*x)));
 
-D = reshape(d, d1,d1,d1);
+D = reshape(d(1:4:end), d1,d1,d1);
 prob = cdfBell((0-Fs)./D);
 figure();
 hold on;
@@ -204,6 +201,7 @@ daspect([1 1 1])
 plot3(X(1,:), X(2,:), X(3,:), 'r.', 'MarkerSize',40);
 view(3)
 camlight; lighting phong;
+
 
 figure()
 hold on;

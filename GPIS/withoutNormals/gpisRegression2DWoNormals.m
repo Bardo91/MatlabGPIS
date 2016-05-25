@@ -30,7 +30,7 @@ kernel = @(x,y)(sigma^2 * exp(-1/2 * gamma *(x - y)'*(x - y)));
 
 R = sqrt(0.5^2 + 0.5^2);
 cen = [0.0, 0.0]';
-mean = @(x) 1/2/R*((x-cen)'*(x-cen) - R^2);
+mean = @(x) 0;%1/2/R*((x-cen)'*(x-cen) - R^2);
 
 sigmaNoise = 0.25;
 K = [];

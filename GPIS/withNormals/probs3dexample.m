@@ -26,8 +26,8 @@ close all; clear all; clc;
 
 AppleData;
 
-X = appleLoc(1:25:end,:)';
-norms = appleNorm(1:25:end,:)';
+X = appleLoc(1:20:end,:)';
+norms = appleNorm(1:20:end,:)';
 
 norms = norms(:,X(1,:) < 0);
 X = X(:,X(1,:) < 0);
@@ -43,7 +43,7 @@ f = [f,norms'];
 [a b] = size(f);
 f = reshape(f', a*b, 1);
 
-step = 0.25;
+step = 0.1;
 lim=2;
 %  spherical mean
 % sigma = 0.0098;

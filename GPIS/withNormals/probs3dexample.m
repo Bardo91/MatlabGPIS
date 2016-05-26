@@ -26,8 +26,8 @@ close all; clear all; clc;
 
 AppleData;
 
-X = appleLoc(1:20:end,:)';
-norms = appleNorm(1:20:end,:)';
+X = appleLoc(1:30:end,:)';
+norms = appleNorm(1:30:end,:)';
 
 % norms = norms(:,X(1,:) < 0);
 % X = X(:,X(1,:) < 0);
@@ -46,38 +46,38 @@ f = reshape(f', a*b, 1);
 step = 0.1;
 lim=1.3;
 
-% %  spherical mean
-% sigma = 0.4; 
-% gamma = 100; 
-% noiseVals = 5e-6; 
-% noiseGrad = 0.02; 
-% R = 1;
+%  spherical mean
+% sigma = 0.01; 
+% gamma = 10; 
+% noiseVals = 0.06; 
+% noiseGrad = 0.04; 
+% R = 1.1;
 % cen = [0.0, 0.0, 0.0]';
 % mean = @(x)1/2/R*((x-cen)'*(x-cen) - R^2);
 % meandx = @(x) 1/R*((x(1)-cen(1)));
 % meandy = @(x) 1/R*((x(2)-cen(2)));
 % meandz = @(x) 1/R*((x(3)-cen(3)));
-% prior = struct( 'pos',[0 0 0],'type','N',...
-%                 'param', [1 1 1], 'rot', [2*pi 0 0],...
+% prior = struct( 'pos',[0 0 0],'type','S',...
+%                 'param', [R R R], 'rot', [2*pi 0 0],...
 %                 'Sigma', sigma, 'Gamma', gamma,...
 %                 'noiseVals', noiseVals, 'noiseGrad', noiseGrad);
-            
-% No prior
+%             
+% % No prior
 sigma = 0.11;%0.5395;
 gamma = 11.2;%10.43;    
 noiseVals = 1.17e-5;
 noiseGrad = 5.87e-4;
 meanLevel = 0.17;
-
+mean = @(x)meanLevel;
+meandx = @(x)0;
+meandy = @(x)0;
+meandz = @(x)0;
 prior = struct( 'pos',[0 0 0],'type','N',...
                 'param', [meanLevel 1 1], 'rot', [2*pi 0 0],...
                 'Sigma', sigma, 'Gamma', gamma,...
                 'noiseVals', noiseVals, 'noiseGrad', noiseGrad);
 
-mean = @(x)meanLevel;
-meandx = @(x)0;
-meandy = @(x)0;
-meandz = @(x)0;
+
 
 [Xg,Yg,Zg] = meshgrid(-lim:step:lim,-lim:step:lim,[-0.8, 0, 0.8]);
 [d1,d2,d3] = size(Xg);
@@ -136,7 +136,22 @@ prob = cdfBell((0-Fs)./D);
 
 [meanValue, meanGrad] = computePriorFunctions(prior)
 %% Accurate plot
-[faces, vertices] = computeSurface(X, norms, prior, meanValue, meanGrad, X(:,1:20:end), 0.05, false);
+[faces, vertices] = computeSurface(X, norms, prior, meanValue, meanGrad, X(:,1), 0.2, false);
+figure
+hold on
+axis equal
+
+vertices(:,3) = - vertices(:,3);
+
+patch('faces',faces,'vertices',vertices,...
+    'facecolor',[0.5 0.5 0.5], ...
+    'edgecolor', 'none', ...
+    'facelighting','phong',...
+    'FaceAlpha', 1);
+camlight
+set(gca,'view',[46.8000   18.8000]);
+light('Position',[-1 -1 0])
+view([-15 30])
 
 figure
 hold on
@@ -167,11 +182,11 @@ patch('faces',faces,'vertices',vertices,...
     'facecolor',[0.5 0.5 0.5], ...
     'edgecolor', 'none', ...
     'facelighting','phong',...
-    'FaceAlpha', 0.5);
+    'FaceAlpha', 1);
 camlight
 set(gca,'view',[46.8000   18.8000]);
 light('Position',[-1 -1 0])
-view([-37.5 30])
+view([-15 30])
 
 figure
 % subplot(1,4,2)

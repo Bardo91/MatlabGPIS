@@ -37,8 +37,8 @@ m = length(X);
 Xs = [reshape(Xg,d1*d2,1),reshape(Yg,d1*d2,1)]';
 n = length(Xs);
 
-sigma = 0.1;
-gamma = 100;
+sigma = 1;
+gamma = 10;
 
 display('Computing covariance matrix K');
 K = ComputeFullKder(sigma, gamma, X, 0.0, 0.0);
@@ -66,9 +66,9 @@ display('Computing means');
 
 R = 1;
 cen = [0.0, 0.0]';
-mean = @(x)0.1;% 1/2/R*((x-cen)'*(x-cen) - R^2);
-meandx = @(x)0;% 1/R*((x(1)-cen(1)));
-meandy = @(x)0%; 1/R*((x(2)-cen(2)));
+mean = @(x) 1/2/R*((x-cen)'*(x-cen) - R^2);
+meandx = @(x) 1/R*((x(1)-cen(1)));
+meandy = @(x) 1/R*((x(2)-cen(2)));
 
 for i = 1:m
     mu((i-1)*3 +1) = mean(X(:,i));
@@ -133,4 +133,10 @@ prob = cdfBell((0-Fs)./D);
 figure();
 hold on;
 surf(Xg,Yg,prob);
+
+
+figure;
+contourf(D);     
+colorbar;
+axis equal;
 

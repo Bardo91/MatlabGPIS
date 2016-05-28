@@ -1,39 +1,7 @@
-% GPIS learning
-% 1D example, zero mean
-
-% close all; clear all; clc;
-% 
-% X = [1,0,0;
-%     0,1,0;
-%     0,0,1;
-% %     -0.5774,-0.5774,-0.5774]';
-%     -1,-1,-1]';
-% 
-% m = length(X); 
-% norms = [   1 0 0 -sqrt(3);
-%             0 1 0 -sqrt(3);
-%             0 0 1 -sqrt(3)]';
-% f = [   0,1,0,0,...
-%         0,0,1,0,...
-%         0,0,0,1,...
-%         0,-sqrt(3),-sqrt(3),-sqrt(3)   ]';
-% 
-% step = 0.5;
-% lim=2;
-% sigma = 0.5;
-% gamma = 1;
-% R = 1;
-
-% AppleData;
-% 
-% X = appleLoc(1:30:end,:)';
-% norms = appleNorm(1:30:end,:)';
-% X = points(1:10:end,:)';
-% norms = surface(1:10:end,:)';
 X = PartMeans;
 norms = SurfNormals;
-norms = norms(:,X(1,:) < 0);
-X = X(:,X(1,:) < 0);
+% norms = norms(:,X(1,:) < 0);
+% X = X(:,X(1,:) < 0);
 m = length(X);
 
 f = zeros(m,1);
@@ -41,8 +9,9 @@ f = [f,norms'];
 [a b] = size(f);
 f = reshape(f', a*b, 1);
 
-step = 0.5;
-lim=4;
+step = 0.1;
+limx=3.5;
+limy = 3.2;
 %  ellipsoid mean
 sigma = Prior.Sigma; 
 gamma = Prior.Gamma; 
@@ -85,7 +54,7 @@ prior = Prior;
 % 
 % 
 
-[Xg,Yg,Zg] = meshgrid(-lim:step:lim,-lim:step:lim,[-0.8, 0, 0.8]);
+[Xg,Yg,Zg] = meshgrid(-limx:step:limx,-limy:step:limy,[0]);
 [d1,d2,d3] = size(Xg);
 Xs = [reshape(Xg,d1*d2*d3,1),reshape(Yg,d1*d2*d3,1),reshape(Zg,d1*d2*d3,1)]';
 n = length(Xs);
@@ -118,28 +87,27 @@ for i = 1:n
 end
 
 display('Computing regression');
-kinv = inv(K);
-fs = mus + Ks'*kinv*(f - mu);
-sig = - Ks'*kinv*Ks;
+R = K\Ks;
+fs = mus + R'*(f - mu);
+var = diag(Kss) - diag(R'*Ks);
 
-d = diag(Kss) + diag(sig);
-
+sig = sqrt(var);
+SIG = reshape(sig(1:4:end), d1,d2,d3);
 Fs = reshape(fs(1:4:end),d1,d2,d3);
 
 display('Computing the inside probability');
 % Compute the inside probability.
-cdfBell = @(x) 0.5.*(1 + sign(x).*sqrt(1 - exp(-2/pi.*x.*x)));
-
-D = reshape(d(1:4:end), d1,d2,d3);
-prob = cdfBell((0-Fs)./D);
-
+cdfBell = @(x) 0.5*(1 + sign(x).*sqrt(1 - exp(-2/pi*x.*x)));
+% prob = cdfBell((0-Fs)./SIG);
+prob = normcdf(0, Fs, SIG);
 %% Accurate plot
 [faces, vertices] = computeSurface(X, norms, prior, meanValue, meanGrad, X(:,1), 0.2, false);
+
 figure
 hold on
 axis equal
-
 vertices(:,3) = - vertices(:,3);
+quiver3(X(1,:),X(2,:),X(3,:), norms(1,:),norms(2,:),norms(3,:),'linewidth',2,'color','r');
 
 patch('faces',faces,'vertices',vertices,...
     'facecolor',[0.5 0.5 0.5], ...
@@ -149,15 +117,23 @@ patch('faces',faces,'vertices',vertices,...
 camlight
 set(gca,'view',[46.8000   18.8000]);
 light('Position',[-1 -1 0])
-view([-15 30])
+view([25 30])
+V = [   -limx,-limy,0;
+        -limx,limy,0;
+        limx,limy,0;
+        limx,-limy,0];
+F = [1,2,3;
+    1,3,4]
+patch('Vertices',V,'Faces',F,...
+    'facecolor',[0.5 0.3 0.3], ...
+    'edgecolor', 'none', ...
+    'facelighting','phong',...
+    'FaceAlpha', 0.3)
 
 figure
 hold on
 axis equal
-
-plot3(X(1,:),X(2,:),X(3,:),'r.','markersize',30);
 quiver3(X(1,:),X(2,:),X(3,:), norms(1,:),norms(2,:),norms(3,:),'linewidth',2,'color','r');
-
 patch('faces',faces,'vertices',vertices,...
     'facecolor',[0.5 0.5 0.5], ...
     'edgecolor', 'none', ...
@@ -166,40 +142,26 @@ patch('faces',faces,'vertices',vertices,...
 camlight
 set(gca,'view',[46.8000   18.8000]);
 light('Position',[-1 -1 0])
-contourf(Xg(:,:,1),Yg(:,:,1),prob(:,:,2));        % draw image and scale colormap to values range
+contourf(Xg(:,:,1),Yg(:,:,1),prob(:,:,1));        % draw image and scale colormap to values range
 colorbar;
-view([-37.5 30])
-
-figure
-% subplot(1,4,1)
-hold on
-axis equal
-plot3(X(1,:),X(2,:),X(3,:),'r.','markersize',30);
-quiver3(X(1,:),X(2,:),X(3,:), norms(1,:),norms(2,:),norms(3,:),'linewidth',2,'color','r');
-patch('faces',faces,'vertices',vertices,...
-    'facecolor',[0.5 0.5 0.5], ...
-    'edgecolor', 'none', ...
-    'facelighting','phong',...
-    'FaceAlpha', 1);
-camlight
-set(gca,'view',[46.8000   18.8000]);
-light('Position',[-1 -1 0])
-view([-15 30])
+caxis([0 1])
+view([25 30])
 
 figure
 % subplot(1,4,2)
-contourf(Xg(:,:,1),Yg(:,:,1),prob(:,:,1));        % draw image and scale colormap to values range
+imagesc(prob(:,:,1));        % draw image and scale colormap to values range
 colorbar;
+caxis([0 1])
 axis equal
-
-figure
-% subplot(1,4,3)
-contourf(Xg(:,:,1),Yg(:,:,1),prob(:,:,2));        % draw image and scale colormap to values range
-colorbar;
-axis equal
-
-figure
-% subplot(1,4,4)
-contourf(Xg(:,:,1),Yg(:,:,1),prob(:,:,3));        % draw image and scale colormap to values range
-colorbar;
-axis equal
+% 
+% figure
+% % subplot(1,4,3)
+% contourf(Xg(:,:,1),Yg(:,:,1),prob(:,:,2));        % draw image and scale colormap to values range
+% colorbar;
+% axis equal
+% 
+% figure
+% % subplot(1,4,4)
+% contourf(Xg(:,:,1),Yg(:,:,1),prob(:,:,3));        % draw image and scale colormap to values range
+% colorbar;
+% axis equal

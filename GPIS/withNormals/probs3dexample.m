@@ -1,7 +1,7 @@
 X = PartMeans;
 norms = SurfNormals;
-% norms = norms(:,X(1,:) < 0);
-% X = X(:,X(1,:) < 0);
+norms = norms(:,X(2,:) > 0);
+X = X(:,X(2,:) > 0);
 m = length(X);
 
 f = zeros(m,1);
@@ -15,6 +15,11 @@ limy = 3.2;
 %  ellipsoid mean
 sigma = Prior.Sigma; 
 gamma = Prior.Gamma; 
+% Prior.param(1) = 0; 
+% Prior.param(2) = 50;
+% Prior.type = 'N';
+% R = Prior.param(2);
+
 noiseVals = Prior.noiseVals; 
 noiseGrad = Prior.noiseGrad; 
 prior = Prior;       
@@ -61,18 +66,22 @@ n = length(Xs);
 
 display('Computing covariance matrix K');
 K = ComputeFullKder(sigma, gamma, X, noiseVals, noiseGrad);
+% K = ComputeCovMatFullTP(R,X, noiseVals, noiseGrad);
 
 display('Computing covariance matrix Ks');
 Ks = ComputeKderX1X2(sigma, gamma, X, Xs);
+% Ks = CovMatStarTP(R, X, Xs);
 
 display('Computing covariance matrix Kss');
 [D,N] = size(Xs);
 Kss = DiagComputeKderX1X2(sigma,gamma,Xs,Xs);
+% Kss = CovMatFullTP(R,Xs);
+
 NoiseDiag =  [noiseVals * ones(1,N);
               noiseGrad * ones(D,N)];
 Kss = Kss + diag(NoiseDiag(:));
-% Kss = ComputeFullKder(sigma, gamma, Xs, noiseVals, noiseGrad);
 
+% Kss = ComputeFullKder(sigma, gamma, Xs, noiseVals, noiseGrad);
 display('Computing means');
 
 mu = zeros(m*4,1);
@@ -100,15 +109,17 @@ display('Computing the inside probability');
 cdfBell = @(x) 0.5*(1 + sign(x).*sqrt(1 - exp(-2/pi*x.*x)));
 % prob = cdfBell((0-Fs)./SIG);
 prob = normcdf(0, Fs, SIG);
-%% Accurate plot
-[faces, vertices] = computeSurface(X, norms, prior, meanValue, meanGrad, X(:,1), 0.2, false);
+% Accurate plot
+
+[faces, vertices] = computeSurface(X, norms, Prior, meanValue, meanGrad, X(:,1), 0.2, false);
+% [faces, vertices] = computeSurface2(X, norms, Prior, meanValue, meanGrad, X(:,1), 0.2, false);
+
 
 figure
 hold on
 axis equal
 vertices(:,3) = - vertices(:,3);
 quiver3(X(1,:),X(2,:),X(3,:), norms(1,:),norms(2,:),norms(3,:),'linewidth',2,'color','r');
-
 patch('faces',faces,'vertices',vertices,...
     'facecolor',[0.5 0.5 0.5], ...
     'edgecolor', 'none', ...
@@ -117,18 +128,23 @@ patch('faces',faces,'vertices',vertices,...
 camlight
 set(gca,'view',[46.8000   18.8000]);
 light('Position',[-1 -1 0])
-view([25 30])
-V = [   -limx,-limy,0;
-        -limx,limy,0;
-        limx,limy,0;
-        limx,-limy,0];
-F = [1,2,3;
-    1,3,4]
-patch('Vertices',V,'Faces',F,...
-    'facecolor',[0.5 0.3 0.3], ...
-    'edgecolor', 'none', ...
-    'facelighting','phong',...
-    'FaceAlpha', 0.3)
+view([0 90])
+axis([-4 4 -2.5 2.5 -2 2])
+axis off
+set(gca,'position',[0 0 1 1])
+set(gcf, 'units', 'points', 'position', [0 0  500 300]);
+
+% V = [   -limx,-limy,0;
+%         -limx,limy,0;
+%         limx,limy,0;
+%         limx,-limy,0];
+% F = [1,2,3;
+%     1,3,4]
+% patch('Vertices',V,'Faces',F,...
+%     'facecolor',[0.5 0.3 0.3], ...
+%     'edgecolor', 'none', ...
+%     'facelighting','phong',...
+%     'FaceAlpha', 0.3)
 
 figure
 hold on
@@ -153,7 +169,7 @@ imagesc(prob(:,:,1));        % draw image and scale colormap to values range
 colorbar;
 caxis([0 1])
 axis equal
-% 
+
 % figure
 % % subplot(1,4,3)
 % contourf(Xg(:,:,1),Yg(:,:,1),prob(:,:,2));        % draw image and scale colormap to values range

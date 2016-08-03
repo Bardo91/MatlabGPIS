@@ -6,7 +6,7 @@ l = 3;
 kernel = @(x,y) exp(-2*sin(5*pi*(x-y))/l/l);
 
 %% Let be X the finite set of variables that we want to sample.
-X = 0:0.01:1;
+X = 0:1;
 
 % Assuming 0 mean. Compute the covariance assuming exponential kernel
 n = length(X);

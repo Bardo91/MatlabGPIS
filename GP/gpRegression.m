@@ -1,14 +1,10 @@
-%% Learning GP
-% GP regression
 close all; clear all; clc;
 
-l = 0.1;
-kernel = @(x,y) exp(-(x-y)*(x-y)'/(l*l));
+l = 0.3;
+kernel = @(x,y) 0.05*exp(-(x-y)*(x-y)'/(l*l));
 
 %% Let be X the finite set of variables that we want to sample.
-X = 0:0.01:1;
-
-% Assuming 0 mean. Compute the covariance assuming exponential kernel
+X = 0:0.01:1.5
 n = length(X);
 
 K = [];
@@ -18,12 +14,8 @@ for i=1:n
     end
 end
 
-fs = [0, 1, 0, 4];
-Xs = [0, 0.2, 0.6, 0.8];
-
-% fs = [0, 1, 0, 4, 2];
-% Xs = [0, 0.2, 0.6, 0.8, 0.5];
-
+fs = [0, -0.3, 0];
+Xs = [0.4, 0.6, 0.9];
 
 Kss = [];
 for i=1:length(fs)
@@ -42,26 +34,32 @@ end
 nus = 0 + Ks'*inv(Kss)*(fs');
 sig = K - Ks'*inv(Kss)*Ks;
 
-figure(1);
-imagesc(sig);
-colorbar;
-
 figure(2);
 hold on;
-plot(X, nus);
+plot(X, nus,'b','LineWidth',2);
 plot(Xs,fs, 'r*');
 
 d = diag(sig);
-plot(X, nus+sqrt(d), 'r');
-plot(X, nus-sqrt(d), 'r');
+plot(X, nus+sqrt(d),'k');
+plot(X, nus-sqrt(d),'k');
 
-figure(3);
-hold on;
-for i=1:5
-    u = randn(n,1);
-    % L  = chol(K); not very stable numerically 
-    [A S D] = svd(sig);
-    L = A*sqrt(S);
-    F = L*u;
-    plot(nus + F);
-end
+ix1 = 10;
+x1 = X(ix1);
+nu1 = nus(ix1);
+sig1 = sig(ix1,ix1);
+f1 = -0.6:0.01:0.6;
+g1 = normpdf(f1, nu1, sqrt(sig1))*0.1;
+plot(x1 + g1, f1,'r-')
+plot(x1*ones(1, length(f1)), f1, 'k--');
+
+ix2 = 80;
+x2 = X(ix2);
+nu2 = nus(ix2);
+sig2 = sig(ix2,ix2);
+f2 = -0.6:0.01:0.6;
+g2 = normpdf(f2, nu2, sqrt(sig2))*0.1;
+plot(x2 + g2, f2,'r-')
+plot(x2*ones(1, length(f2)), f2, 'k--');
+
+% Horizontal line
+plot(X, zeros(1, length(X)), 'k-');
